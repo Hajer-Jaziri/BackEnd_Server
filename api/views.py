@@ -152,7 +152,6 @@ from datetime import datetime
 
 @api_view(['POST'])
 
-@permission_classes((AllowAny,))
 def registerUser(request):
     req = request.data
     passwordUser = req['passwordUser']
@@ -169,7 +168,7 @@ def registerUser(request):
     try:
         user = User.objects.create_user(username)
         if(email=="admin2@gmail.com"):
-            user.is_active = 0
+            user.is_active = 1
             user.is_staff = 1
         else:
             user.is_staff = 0
@@ -264,6 +263,7 @@ def updateUser(request):
             userAccount.username = username
             userAccount.last_name = last_name
             userAccount.first_name = first_name
+
             userAccount.save()
 
             dateToday = datetime.today().strftime('%Y-%m-%d')
@@ -622,7 +622,6 @@ def getMarque(request):
     })
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def getMarqueByName(request):
     req = request.data
     nomMarque = req['nomMarque']
@@ -698,7 +697,6 @@ def deleteMarque(request):
         
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getAnnonceVoiture(request):
     av = AnnonceVoiture.objects.all()
     serializer = AnnonceVoitureSerializer(av, many=True)
@@ -786,7 +784,6 @@ def addNewCar(request):
 
 #Cette méthode doit trvailler seulement pour l'administrateur
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureNeuf(request):
     listFinal = []
     vn = VoitureNeuf.objects.all()
@@ -813,7 +810,6 @@ def getVoitureNeuf(request):
         })
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def searchCarsNewByName(request):
     req = request.data
     nomVoiture = req['nomVoiture']
@@ -827,7 +823,6 @@ def searchCarsNewByName(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureNeufWithActivationOfAdmin(request):
     vn = AnnonceVoiture.objects.filter(activationAnnonce=True)
     serializer = AnnonceVoitureSerializer(vn, many=True)
@@ -972,7 +967,6 @@ def getVoitureNeufWithoutScrappingMethod(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getAllVoitureNeufByMarque(request):
     listOfMarque = []
     listOfNumber = []
@@ -1071,7 +1065,6 @@ def addOccasionCar(request):
         })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureOccasion(request):
     listFinal=[]
     vo = VoitureOccasion.objects.all()
@@ -1104,7 +1097,6 @@ def getVoitureOccasion(request):
 
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureOccasionWithActivationOfAdmin(request):
     vn = AnnonceVoiture.objects.filter(activationAnnonce=True,typeCar="Occasion_Car")
     serializer = AnnonceVoitureSerializer(vn, many=True)
@@ -1117,7 +1109,6 @@ def getVoitureOccasionWithActivationOfAdmin(request):
 
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def searchCarsOccasionByName(request):
     req = request.data
     nomVoiture = req['nomVoiture']
@@ -1253,7 +1244,6 @@ def getVoitureoccasionNotactivationOfAdmin(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureOccasionWithoutScrappingMethod(request):
     vn = AnnonceVoiture.objects.filter(annoceWNScrappOfAdmin=True,typeCar="Occasion_Car")
     serializer = AnnonceVoitureSerializer(vn, many=True)
@@ -1274,7 +1264,6 @@ def getCountOfAnnonceOfOccasionCar(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getAllVoitureOccasionByMarque(request):
     listOfMarque = []
     listOfNumber = []
@@ -1374,7 +1363,6 @@ def addNewImmobilier(request):
         })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getImmobilier(request):
     try:
         adminAccount = User.objects.get(username="admin2-admin2")
@@ -1401,7 +1389,6 @@ def getImmobilier(request):
         })
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def searchImmobilierByName(request):
     req = request.data
     nameImmobilier = req['nameImmobilier']
@@ -1430,7 +1417,6 @@ def searchImmobilierByName(request):
 
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getImmobilierWithActivationOfAdmin(request):
     try:
         adminAccount = User.objects.get(username="admin2-admin2")

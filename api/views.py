@@ -1,6 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -151,14 +151,16 @@ from datetime import datetime
 
 
 @api_view(['POST'])
+
+@permission_classes((AllowAny,))
 def registerUser(request):
     req = request.data
     passwordUser = req['passwordUser']
     username = req['username']
     last_name = req['last_name']
     email = req['email']
-    is_staff = req['is_staff']
-    is_active = req['is_active']
+    # is_staff = req['is_staff']
+    # is_active = req['is_active']
     date_joined = req['date_joined']
     first_name = req['first_name']
     responseList = []
@@ -166,10 +168,16 @@ def registerUser(request):
 
     try:
         user = User.objects.create_user(username)
+        if(email=="admin2@gmail.com"):
+            user.is_active = 0
+            user.is_staff = 1
+        else:
+            user.is_staff = 0
+            user.is_active = 0
         user.last_name = last_name
         user.email = email
-        user.is_staff = is_staff
-        user.is_active = is_active
+        # user.is_staff = is_staff
+        # user.is_active = is_active
         user.date_joined = date_joined
         user.first_name = first_name
         user.save()
@@ -182,7 +190,7 @@ def registerUser(request):
         token = Token.objects.create(user=infoUser)
 
         data['email'] = email
-        if(is_active == True):
+        if(infoUser.is_active == True):
             data['status'] = "active"
         else:
             data['status'] = "inactive"
@@ -199,7 +207,8 @@ def registerUser(request):
         })
 
         return Response(responseList)
-    except:
+    except Exception as e:
+        print(e)
         responseList.append({
             "status": status.HTTP_404_NOT_FOUND,
             "Message": "Attention you have this account please check the information",
@@ -210,31 +219,31 @@ def registerUser(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated,))
 def activationAccount(request):
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        if(str(adminAccount) == str(request.user)):
-            req = request.data
-            email = req['email']
-            print(email)
-            userAccount = User.objects.get(email=email)
-            userAccount.is_active = True
-            userAccount.save()
+    # try:
+    adminAccount = User.objects.get(username="admin2-admin2")
+    if(str(adminAccount) == str(request.user)):
+        req = request.data
+        email = req['email']
+        print(email)
+        userAccount = User.objects.get(email=email)
+        userAccount.is_active = True
+        userAccount.save()
 
-            dateToday = datetime.today().strftime('%Y-%m-%d')
-            notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=email,contenu="The account has been successfully activated",dateNotification=str(dateToday))
-            notification.save()
-        return Response({
-            "status" : status.HTTP_200_OK,
-            "message": "Le compte "+email+" est activée",
-            "data": {
-                email
-            }
-        })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
-        })
+        dateToday = datetime.today().strftime('%Y-%m-%d')
+        notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=email,contenu="The account has been successfully activated",dateNotification=str(dateToday))
+        notification.save()
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Le compte "+email+" est activée",
+        "data": {
+        email
+        }
+    })
+    # except:
+    #     return Response({
+    #         "status" : status.HTTP_404_NOT_FOUND,
+    #         "message": "Vous n'avez pas le droit d'activer se compte"
+    #     })
 
 
 @api_view(['PUT'])
@@ -269,7 +278,8 @@ def updateUser(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Faire attention le mots de passe ou le mots de passe de confirmation est incorrecte "
             })
-    except:
+    except Exception as e:
+        print(e)
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Il y a une probleme faire attention !!!!"
@@ -280,12 +290,15 @@ def updateUser(request):
 def getListOfUser(request):
     responseList = []
     try:
+        #Token et admin a compte
         adminAccount = User.objects.get(username="admin2-admin2")
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
             users = User.objects.all()
             for u in users:
+                if(u.email=="admin2@gmail.com"):
+                    continue
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
@@ -316,7 +329,7 @@ def getListOfUserNotActivate(request):
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
-            users = User.objects.filter(is_staff=False)
+            users = User.objects.filter(is_active=False)
             for u in users:
                 if(u.email=="admin2@gmail.com"):
                     continue
@@ -349,8 +362,11 @@ def getListOfMembre(request):
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
-            users = User.objects.filter(is_active=True, is_staff=True)
+            users = User.objects.filter(is_active=True)
+            print(users)
             for u in users:
+                if(u.email=="admin2@gmail.com"):
+                    continue
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
@@ -365,7 +381,8 @@ def getListOfMembre(request):
             "message": "Les information de tous les utilisateurs",
             "data" :  responseList
         })
-    except:
+    except Exception as e:
+        print(e)
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
@@ -410,9 +427,11 @@ def searchUserByEmail(request):
         print(request.user)
         if(str(adminAccount) == str(request.user)):
             req = request.data
-            emailUser = req['emailUser']
-            users = User.objects.filter(email=emailUser, is_staff=True)
+            email = req['email']
+            users = User.objects.filter(email=email)
+            print(users)
             for u in users:
+                print(u.email)
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
@@ -427,7 +446,8 @@ def searchUserByEmail(request):
             "message": "Les information de tous les utilisateurs",
             "data" :  responseList
         })
-    except:
+    except Exception as e:
+        print(e)
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
@@ -452,21 +472,24 @@ def addCategorieUsingAdminOrUser(request):
         dateToday = datetime.today().strftime('%Y-%m-%d')
         notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=request.user.email,contenu="An user add an Categorie you need an activation",dateNotification=str(dateToday))
         notification.save()
-        return Response("You cannot do anything because you are not an admin so we need an activation")
+        return Response({
+            "status" : status.HTTP_404_NOT_FOUND,
+            "message": "Vous n'avez pas le droit d'ajouter une nouvelle categorie (Changer le token de l'admin)!!"
+        })
+
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": nomCategorie+" est ajoutée avec sucess !!",
+    })
 
     return Response("Add Categorie sucess")
 
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getCategorie(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            ca = Categorie.objects.all()
-            serializer = CategorieSerializer(ca, many=True)
+        ca = Categorie.objects.all()
+        serializer = CategorieSerializer(ca, many=True)
         return Response({
             "status" : status.HTTP_200_OK,
             "message": "Les information de tous les categories",
@@ -475,7 +498,7 @@ def getCategorie(request):
     except:
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
+            "message": "Vous avez une erreur vérifier !!"
         })
 
 @api_view(['PUT'])
@@ -550,8 +573,6 @@ def activationCategorieByAdmin(request):
 @permission_classes((IsAuthenticated,))
 def getonlyActivationCategorie(request):
     categorieList = []
-    req = request.data
-    nomCategorie = req['nomCategorie']
     try:
         adminAccount = User.objects.get(username="admin2-admin2")
         print(adminAccount)
@@ -635,12 +656,13 @@ def updateMarque(request):
         print(request.user)
         if(str(adminAccount) == str(request.user)):
             try:
-                Marque.objects.get(nomMarque=nomMarque).update(nomMarque=newNameMarque,imageMarque=imageMarque)
+                Marque.objects.filter(nomMarque=nomMarque).update(nomMarque=newNameMarque,imageMarque=imageMarque)
                 return Response({
                     "status" : status.HTTP_200_OK,
                     "message": "La marque "+nomMarque+" est mettre à jour !!!",
                 })
-            except:
+            except Exception as e:
+                print(e)
                 return Response({
                     "status" : status.HTTP_404_NOT_FOUND,
                     "message": "Please check your Marque name"
@@ -909,7 +931,7 @@ def deleteNewCar(request):
         })
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getVoitureNeufInsertWithMembre(request):
     req = request.data
@@ -1444,14 +1466,21 @@ def activationImmobilierByAdmin(request):
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
-            Immobilier.objects.filter(nameImmobilier=nameImmobilier).update(activationAnnonce=True)
-            return Response({
-                "status" : status.HTTP_200_OK,
-                "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
-                "data" :  {
-                    "nameImmobilier" : nameImmobilier
-                }
-            })
+            try:
+                nameIm = Immobilier.objects.get(nameImmobilier=str(nameImmobilier))
+                Immobilier.objects.filter(nameImmobilier=nameImmobilier).update(activationAnnonce=True)
+                return Response({
+                    "status" : status.HTTP_200_OK,
+                    "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
+                    "data" :  {
+                        "nameImmobilier" : nameImmobilier
+                    }
+                })
+            except:
+                return Response({
+                "status" : status.HTTP_404_NOT_FOUND,
+                "message": "Ce nom immibilier n'existe pas",
+                })
         else:
             return Response({
                 "status" : status.HTTP_404_NOT_FOUND,
@@ -1782,13 +1811,20 @@ def activationEmploiByAdmin(request):
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
-            Emploi.objects.filter(nameEmploi=nameEmploi).update(activationAnnonce=True)
-            return Response({
-                "status" : status.HTTP_200_OK,
-                "message": "Les information de l'emploi with activation of "+request.user.email+" !!!",
-                "data" :  {
-                    "nameEmploi" : nameEmploi
-                }
+            try:
+                Emploi.objects.get(nameEmploi=str(nameEmploi))
+                Emploi.objects.filter(nameEmploi=nameEmploi).update(activationAnnonce=True)
+                return Response({
+                    "status" : status.HTTP_200_OK,
+                    "message": "Les information de l'emploi with activation of "+request.user.email+" !!!",
+                    "data" :  {
+                        "nameEmploi" : nameEmploi
+                    }
+                })
+            except:
+                return Response({
+                "status" : status.HTTP_404_NOT_FOUND,
+                "message": "Ce nom emploie n'existe pas",
             })
         else:
             return Response({
@@ -2120,13 +2156,20 @@ def activationMaterielleInformatiqueByAdmin(request):
         print(adminAccount)
         print(request.user)
         if(str(adminAccount) == str(request.user)):
-            MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).update(activationAnnonce=True)
-            return Response({
-                "status" : status.HTTP_200_OK,
-                "message": "Les information de materielle informatique with activation of "+request.user.email+" !!!",
-                "data" :  {
-                    "nameMatrInformatique" : nameMatrInformatique
-                }
+            try:
+                MaterielleInformatique.objects.get(nameMatrInformatique=str(nameMatrInformatique))
+                MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).update(activationAnnonce=True)
+                return Response({
+                    "status" : status.HTTP_200_OK,
+                    "message": "Les information de materielle informatique with activation of "+request.user.email+" !!!",
+                    "data" :  {
+                        "nameMatrInformatique" : nameMatrInformatique
+                    }
+                })
+            except:
+                return Response({
+                "status" : status.HTTP_404_NOT_FOUND,
+                "message": "Ce nom immibilier n'existe pas",
             })
         else:
             return Response({

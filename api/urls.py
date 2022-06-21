@@ -19,17 +19,17 @@ urlpatterns = [
     
     ######################## Methods when we make some action for an user or admin ########################
     path('registerUser/',views.registerUser, name="Register_User"),
-    path('loginUser',obtain_auth_token),
+    path('loginUser/',obtain_auth_token),
     path('activationAccount/',views.activationAccount, name="Activivation_Account"), #cette fonction utilisée seulement par l'admin parce que il est le controleur de l'application
     path('updateUser/',views.updateUser, name="Update_User"), #cette fonction utilisée seulement par l'admin ou le memebre
     path('getListOfUser/',views.getListOfUser, name="La_Liste_de_User_Pour_Admin"), #cette fonction utilisée seulement par l'admin parce que il est le controleur de l'application
     path('getListOfUserNotActivate/',views.getListOfUserNotActivate, name="La_List_de_User_Non_Activaté"),#cette fonction utilisée seulement par l'admin parce que il est le controleur de l'application
     path('getListOfMembre/',views.getListOfMembre, name="La_Liste_Of_Membre"),#cette fonction utilisée seulement par l'admin parce que il est le controleur de l'application
     path('deleteUserUsingAdmin/',views.deleteUserUsingAdmin, name="Delete_User_Using_Admin"),#cette fonction utilisée seulement par l'admin
-    path('searchUserByEmail/',views.searchUserByEmail, name="Search_User_By_Email"),
+    path('searchUser/',views.searchUser, name="Search_User_By_Email"),
 
     ######################### Methods when we make some action for categories ########################
-    path('addCategorieUsingAdminOrUser/',views.addCategorieUsingAdminOrUser),
+    path('addCategorieUsingAdmin/',views.addCategorieUsingAdmin),
     path('getCategorie/',views.getCategorie), #C'est une fonction seulement l'admin peut l'acceder
     path('updateCategorie/',views.updateCategorie), #C'est une fonction seulement l'admin peut l'acceder
     path('deleteCategorie/',views.deleteCategorie), #C'est une fonction seulement l'admin peut l'acceder
@@ -40,7 +40,7 @@ urlpatterns = [
 
     path('addNewMarque/',views.addNewMarque),
     path('getMarque/', views.getMarque),#C'est une fonction seulement l'admin peut l'acceder
-    path('getMarqueByName/',views.getMarqueByName),#C'est une fonction seulement l'admin peut l'acceder
+    path('searchMarqueByName/',views.searchMarqueByName),#C'est une fonction seulement l'admin peut l'acceder
     path('updateMarque/',views.updateMarque),#C'est une fonction seulement l'admin peut l'acceder
     path('deleteMarque/',views.deleteMarque),#C'est une fonction seulement l'admin peut l'acceder
 

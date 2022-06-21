@@ -154,45 +154,23 @@ from datetime import datetime
 
 def registerUser(request):
     req = request.data
-    passwordUser = req['passwordUser']
+    passwordUser = req['password']
     username = req['username']
-    last_name = req['last_name']
     email = req['email']
     # is_staff = req['is_staff']
     # is_active = req['is_active']
-    date_joined = req['date_joined']
-    first_name = req['first_name']
     responseList = []
     data = {}
 
     try:
-        user = User.objects.create_user(username)
-        if(email=="admin2@gmail.com"):
-            user.is_active = 1
-            user.is_staff = 1
-        else:
-            user.is_staff = 0
-            user.is_active = 0
-        user.last_name = last_name
-        user.email = email
-        # user.is_staff = is_staff
-        # user.is_active = is_active
-        user.date_joined = date_joined
-        user.first_name = first_name
+        user = User.objects.create_user(username=username, email=email, password=passwordUser)
+        user.is_active = False
         user.save()
-
-        userChangePassword = User.objects.get(username=username)
-        userChangePassword.set_password(passwordUser)
-        userChangePassword.save()
 
         infoUser = User.objects.get(username=username)
         token = Token.objects.create(user=infoUser)
 
-        data['email'] = email
-        if(infoUser.is_active == True):
-            data['status'] = "active"
-        else:
-            data['status'] = "inactive"
+        data['status'] = infoUser.is_active
         getInfoToken = Token.objects.get(user=infoUser).key
         data['token'] = getInfoToken
         
@@ -219,11 +197,9 @@ def registerUser(request):
 @permission_classes((IsAuthenticated,))
 def activationAccount(request):
     # try:
-    adminAccount = User.objects.get(username="admin2-admin2")
-    if(str(adminAccount) == str(request.user)):
+    if request.user.is_staff is True:
         req = request.data
         email = req['email']
-        print(email)
         userAccount = User.objects.get(email=email)
         userAccount.is_active = True
         userAccount.save()
@@ -249,34 +225,40 @@ def activationAccount(request):
 @permission_classes((IsAuthenticated,))
 def updateUser(request):
     try:
+        userAccount = request.user
         req = request.data
-        passwordUser = req['passwordUser']
-        confirmPassword = req['confirmPassword']
+        passwordUser = req['password']
+        confirmPassword = req['password_confirm']
         username = req['username']
-        last_name = req['last_name']
-        first_name = req['first_name']
 
-        userAccount = User.objects.get(email=request.user.email)
-
-        if(str(passwordUser) == str(confirmPassword)):
+        if(str(passwordUser) == str(confirmPassword)) and passwordUser!= "":
             userAccount.set_password(passwordUser)
-            userAccount.username = username
-            userAccount.last_name = last_name
-            userAccount.first_name = first_name
-
+            if userAccount.username != username and username != "":
+                userAccount.username = username
             userAccount.save()
-
             dateToday = datetime.today().strftime('%Y-%m-%d')
             notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=request.user.email,contenu="You have modified some user information",dateNotification=str(dateToday))
             notification.save()
             return Response({
             "status" : status.HTTP_200_OK,
-            "message": "Le compte "+request.user.email+" à été modifiée avec sucess"
+            "message": "sucess"
             })
+        elif (str(passwordUser) == str(confirmPassword)) and passwordUser == "":
+            if userAccount.username != username and username != "":
+                userAccount.username = username
+                userAccount.save()
+                dateToday = datetime.today().strftime('%Y-%m-%d')
+                notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=request.user.email,contenu="You have modified some user information",dateNotification=str(dateToday))
+                notification.save()
+                return Response({
+                    "status" : status.HTTP_200_OK,
+                    "message": "success"
+                    })
+
         else:
             return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Faire attention le mots de passe ou le mots de passe de confirmation est incorrecte "
+            "status" : status.HTTP_200_OK,
+            "message": "0 changes"
             })
     except Exception as e:
         print(e)
@@ -291,22 +273,17 @@ def getListOfUser(request):
     responseList = []
     try:
         #Token et admin a compte
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             users = User.objects.all()
             for u in users:
-                if(u.email=="admin2@gmail.com"):
+                if(u.email==request.user.email):
                     continue
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
-                    "last_name": u.last_name,
                     "is_staff": u.is_staff,
                     "is_active": u.is_active,
-                    "date_joined": u.date_joined,
-                    "first_name": u.first_name
+                    
                 })
         return Response({
             "status" : status.HTTP_200_OK,
@@ -325,22 +302,17 @@ def getListOfUser(request):
 def getListOfUserNotActivate(request):
     responseList = []
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             users = User.objects.filter(is_active=False)
             for u in users:
-                if(u.email=="admin2@gmail.com"):
+                if(u.email==request.user.email):
                     continue
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
-                    "last_name": u.last_name,
                     "is_staff": u.is_staff,
-                    # "is_active": u.is_active,
-                    "date_joined": u.date_joined,
-                    "first_name": u.first_name
+                    "is_active": u.is_active,
+            
                 })
         return Response({
             "status" : status.HTTP_200_OK,
@@ -358,23 +330,17 @@ def getListOfUserNotActivate(request):
 def getListOfMembre(request):
     responseList = []
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             users = User.objects.filter(is_active=True)
-            print(users)
             for u in users:
-                if(u.email=="admin2@gmail.com"):
+                if(u.email==request.user.email):
                     continue
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
-                    "last_name": u.last_name,
                     "is_staff": u.is_staff,
-                    # "is_active": u.is_active,
-                    "date_joined": u.date_joined,
-                    "first_name": u.first_name
+                    "is_active": u.is_active,
+                    
                 })
         return Response({
             "status" : status.HTTP_200_OK,
@@ -393,8 +359,7 @@ def getListOfMembre(request):
 @permission_classes((IsAuthenticated,))
 def deleteUserUsingAdmin(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             req = request.data
             email = req['email']
             User.objects.filter(email=str(email)).delete()
@@ -419,27 +384,21 @@ def deleteUserUsingAdmin(request):
 
 @api_view(["POST"])
 @permission_classes((IsAuthenticated,))
-def searchUserByEmail(request):
+def searchUser(request):
     responseList = []
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             req = request.data
-            email = req['email']
-            users = User.objects.filter(email=email)
+            username = req['username']
+            users = User.objects.filter(username=username)
             print(users)
             for u in users:
                 print(u.email)
                 responseList.append({
                     "email": u.email,
                     "user_name": u.username,
-                    "last_name": u.last_name,
                     "is_staff": u.is_staff,
                     "is_active": u.is_active,
-                    "date_joined": u.date_joined,
-                    "first_name": u.first_name
                 })
         return Response({
             "status" : status.HTTP_200_OK,
@@ -457,16 +416,16 @@ def searchUserByEmail(request):
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated,))
-def addCategorieUsingAdminOrUser(request):
+def addCategorieUsingAdmin(request):
     req = request.data
     # emailUser = req['emailUser']
     nomCategorie = req['nomCategorie']
 
-    if(request.user.email=="admin2@gmail.com"):
-        categorie = Categorie(nomCategorie=nomCategorie,activationCategorie=True)
+    if request.user.is_staff is True:
+        categorie = Categorie(nomCategorie=nomCategorie,)
         categorie.save()
     else:
-        categorie = Categorie(nomCategorie=nomCategorie,activationCategorie=False)
+        categorie = Categorie(nomCategorie=nomCategorie,)
         categorie.save()
 
         dateToday = datetime.today().strftime('%Y-%m-%d')
@@ -509,10 +468,7 @@ def updateCategorie(request):
     newNameCategorie = req['newNameCategorie']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             Categorie.objects.filter(nomCategorie=nomCategorie).update(nomCategorie=newNameCategorie)
         return Response({
             "status" : status.HTTP_200_OK,
@@ -530,10 +486,7 @@ def deleteCategorie(request):
     req = request.data
     nomCategorie = req['nomCategorie']
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             Categorie.objects.filter(nomCategorie=nomCategorie).delete()
         return Response({
             "status" : status.HTTP_200_OK,
@@ -552,10 +505,7 @@ def activationCategorieByAdmin(request):
     req = request.data
     nomCategorie = req['nomCategorie']
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             Categorie.objects.filter(nomCategorie=nomCategorie).update(activationCategorie=True)
         return Response({
             "status" : status.HTTP_200_OK,
@@ -574,10 +524,7 @@ def activationCategorieByAdmin(request):
 def getonlyActivationCategorie(request):
     categorieList = []
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             categorie = Categorie.objects.filter(activationCategorie=True)
             for c in categorie:
                 # print(m.emailMembre.firstNameUser)
@@ -622,7 +569,7 @@ def getMarque(request):
     })
 
 @api_view(['POST'])
-def getMarqueByName(request):
+def searchMarqueByName(request):
     req = request.data
     nomMarque = req['nomMarque']
     try:
@@ -649,28 +596,15 @@ def updateMarque(request):
     newNameMarque = req['newNameMarque']
     imageMarque = req['imageMarque']
 
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            try:
-                Marque.objects.filter(nomMarque=nomMarque).update(nomMarque=newNameMarque,imageMarque=imageMarque)
-                return Response({
-                    "status" : status.HTTP_200_OK,
-                    "message": "La marque "+nomMarque+" est mettre à jour !!!",
-                })
-            except Exception as e:
-                print(e)
-                return Response({
-                    "status" : status.HTTP_404_NOT_FOUND,
-                    "message": "Please check your Marque name"
-                })
-    except:
+    if Marque.objects.filter(nomMarque=nomMarque).update(nomMarque=newNameMarque,imageMarque=imageMarque) :
+        return Response({
+        "status" : status.HTTP_200_OK,
+        "message": " marque est mettre à jour !!!",
+            })
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
-        })
+            "message": "Please check your Marque name"
+            })
         
 
 @api_view(['DELETE'])
@@ -680,10 +614,7 @@ def deleteMarque(request):
     nomMarque = req['nomMarque']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             Marque.objects.filter(nomMarque=nomMarque).delete()
         return Response({
             "status" : status.HTTP_200_OK,
@@ -727,10 +658,7 @@ def addNewCar(request):
         mq = Marque.objects.get(nomMarque=nomMarque)
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie,activationCategorie=True)
             except:
@@ -814,7 +742,7 @@ def searchCarsNewByName(request):
     req = request.data
     nomVoiture = req['nomVoiture']
 
-    nVN = AnnonceVoiture.objects.filter(nomVoiture=nomVoiture)
+    nVN = AnnonceVoiture.objects.filter(nomVoiture=nomVoiture,activationAnnonce=True)
     serializer = AnnonceVoitureSerializer(nVN, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
@@ -835,8 +763,9 @@ def getVoitureNeufWithActivationOfAdmin(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getVoitureNeufNotactivationOfAdmin(request):
-    vn = AnnonceVoiture.objects.filter(activationAnnonce=False)
-    serializer = AnnonceVoitureSerializer(vn, many=True)
+    if request.user.is_staff is True:
+        vn = AnnonceVoiture.objects.filter(activationAnnonce=False)
+        serializer = AnnonceVoitureSerializer(vn, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Les information du voiture neuf qui ne sont pas activée par admin ",
@@ -848,12 +777,8 @@ def getVoitureNeufNotactivationOfAdmin(request):
 def activationVoitureNeufByAdmin(request):
     req = request.data
     nomVoiture = req['nomVoiture']
-
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             AnnonceVoiture.objects.filter(nomVoiture=nomVoiture).update(activationAnnonce=True)
             return Response({
                 "status" : status.HTTP_200_OK,
@@ -948,7 +873,8 @@ def getVoitureNeufInsertWithMembre(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfNewCar(request):
-    vn = VoitureNeuf.objects.all().count()
+    if request.user.is_staff is True:
+        vn = VoitureNeuf.objects.all().count()
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Les nombres d'annonces du voiture neuf qui sont inclue dans la base !!",
@@ -956,7 +882,6 @@ def getCountOfAnnonceOfNewCar(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureNeufWithoutScrappingMethod(request):
     vn = AnnonceVoiture.objects.filter(annoceWNScrappOfAdmin=True,typeCar="New_Car")
     serializer = AnnonceVoitureSerializer(vn, many=True)
@@ -965,16 +890,17 @@ def getVoitureNeufWithoutScrappingMethod(request):
         "message": "Les annonces du voiture neuf qui sont inserer manuellement sans interaction avec notre algo de webscrappig !!",
         "data" :  serializer.data
     })
-
+@permission_classes((IsAuthenticated,))    
 @api_view(['GET'])
 def getAllVoitureNeufByMarque(request):
     listOfMarque = []
     listOfNumber = []
-    marque = Marque.objects.all()
-    for m in marque:
-        listOfMarque.append(m.nomMarque)
-        countNumber = AnnonceVoiture.objects.filter(nomMarque = m.nomMarque,typeCar="New_Car").count()
-        listOfNumber.append(countNumber)
+    if request.user.is_staff is True:
+        marque = Marque.objects.all()
+        for m in marque:
+            listOfMarque.append(m.nomMarque)
+            countNumber = AnnonceVoiture.objects.filter(nomMarque = m.nomMarque,typeCar="New_Car").count()
+            listOfNumber.append(countNumber)
     
     resultFinale = dict(zip(listOfMarque, listOfNumber))
 
@@ -1011,10 +937,7 @@ def addOccasionCar(request):
         mq = Marque.objects.get(nomMarque=nomMarque)
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie,activationCategorie=True)
             except:
@@ -1070,7 +993,7 @@ def getVoitureOccasion(request):
     vo = VoitureOccasion.objects.all()
     for i in vo:
         annonceVoit = AnnonceVoiture.objects.get(id=i.annonceVoiture_id)
-        voitOcc = VoitureOccasion.objects.get(annonceVoiture_id=i.annonceVoiture_id)
+        voitOcc = VoitureOccasion.objects.get(annonceVoiture_id=i.annonceVoiture_id,)
         listFinal.append({
             "id_Voiture": annonceVoit.id,
             "Nom_Categorie": annonceVoit.idVoiture.nomCategorie,
@@ -1113,7 +1036,7 @@ def searchCarsOccasionByName(request):
     req = request.data
     nomVoiture = req['nomVoiture']
 
-    nVN = AnnonceVoiture.objects.filter(nomVoiture=nomVoiture,typeCar="Occasion_Car")
+    nVN = AnnonceVoiture.objects.filter(nomVoiture=nomVoiture,typeCar="Occasion_Car",activationAnnonce=True)
     serializer = AnnonceVoitureSerializer(nVN, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
@@ -1186,10 +1109,7 @@ def deleteOccasionCar(request):
     nomVoiture = req['nomVoiture']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             anVoi = AnnonceVoiture.objects.get(nomVoiture=nomVoiture)
             print(anVoi.id)
             VoitureOccasion.objects.filter(annonceVoiture_id=anVoi.id).delete()
@@ -1235,8 +1155,9 @@ def getVoitureOccasionInsertWithMembre(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getVoitureoccasionNotactivationOfAdmin(request):
-    vn = AnnonceVoiture.objects.filter(activationAnnonce=False,typeCar="Occasion_Car")
-    serializer = AnnonceVoitureSerializer(vn, many=True)
+    if request.user.is_staff is True:
+        vn = AnnonceVoiture.objects.filter(activationAnnonce=False,typeCar="Occasion_Car")
+        serializer = AnnonceVoitureSerializer(vn, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Les information du voiture neuf qui ne sont pas activée par admin ",
@@ -1256,30 +1177,33 @@ def getVoitureOccasionWithoutScrappingMethod(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfOccasionCar(request):
-    vn = VoitureOccasion.objects.all().count()
+    if request.user.is_staff is True:
+        vn = VoitureOccasion.objects.all().count()
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Les nombres d'annonces du voiture neuf qui sont inclue dans la base !!",
         "data" :  {"nb_NewCar": vn}
     })
-
+    
+@permission_classes((IsAuthenticated,))    
 @api_view(['GET'])
 def getAllVoitureOccasionByMarque(request):
-    listOfMarque = []
-    listOfNumber = []
-    marque = Marque.objects.all()
-    for m in marque:
-        listOfMarque.append(m.nomMarque)
-        countNumber = AnnonceVoiture.objects.filter(nomMarque = m.nomMarque,typeCar="Occasion_Car").count()
-        listOfNumber.append(countNumber)
+    if request.user.is_staff is True:
+        listOfMarque = []
+        listOfNumber = []
+        marque = Marque.objects.all()
+        for m in marque:
+            listOfMarque.append(m.nomMarque)
+            countNumber = AnnonceVoiture.objects.filter(nomMarque = m.nomMarque,typeCar="Occasion_Car").count()
+            listOfNumber.append(countNumber)
     
-    resultFinale = dict(zip(listOfMarque, listOfNumber))
+        resultFinale = dict(zip(listOfMarque, listOfNumber))
 
-    return Response({
-        "status" : status.HTTP_200_OK,
-        "message": "Tous les annonces de voitures neuf par marque !!",
-        "data" :  resultFinale
-    })
+        return Response({
+            "status" : status.HTTP_200_OK,
+            "message": "Tous les annonces de voitures neuf par marque !!",
+            "data" :  resultFinale
+        })
 
 ############################################# Annonce Immobilier Functions #############################################
 
@@ -1297,10 +1221,7 @@ def addNewImmobilier(request):
 
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie)
             except:
@@ -1365,11 +1286,7 @@ def addNewImmobilier(request):
 @api_view(['GET'])
 def getImmobilier(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-
+        if request.user.is_staff is True:
             i = Immobilier.objects.all()
             serializer = ImmobilierSerializer(i, many=True)
             return Response({
@@ -1393,11 +1310,8 @@ def searchImmobilierByName(request):
     req = request.data
     nameImmobilier = req['nameImmobilier']
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            imo = Immobilier.objects.filter(nameImmobilier=nameImmobilier)
+        if request.user.is_staff is True:
+            imo = Immobilier.objects.filter(nameImmobilier=nameImmobilier,activationAnnonce=True)
             serializer = ImmobilierSerializer(imo, many=True)
             return Response({
                     "status" : status.HTTP_200_OK,
@@ -1419,10 +1333,7 @@ def searchImmobilierByName(request):
 @api_view(['GET'])
 def getImmobilierWithActivationOfAdmin(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             imo = Immobilier.objects.filter(activationAnnonce=True)
             serializer = ImmobilierSerializer(imo, many=True)
             return Response({
@@ -1448,10 +1359,7 @@ def activationImmobilierByAdmin(request):
     nameImmobilier = req['nameImmobilier']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 nameIm = Immobilier.objects.get(nameImmobilier=str(nameImmobilier))
                 Immobilier.objects.filter(nameImmobilier=nameImmobilier).update(activationAnnonce=True)
@@ -1520,10 +1428,7 @@ def deleteImmobilier(request):
     req = request.data
     nameImmobilier = req['nameImmobilier']
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 im = Immobilier.objects.get(nameImmobilier=nameImmobilier)
                 Immobilier.objects.filter(nameImmobilier=nameImmobilier).delete()
@@ -1566,10 +1471,7 @@ def getImmobilierInsertWithMembre(request):
 @permission_classes((IsAuthenticated,))
 def getImmobilierWithNotActivationOfAdmin(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             imo = Immobilier.objects.filter(activationAnnonce=False)
             serializer = ImmobilierSerializer(imo, many=True)
             return Response({
@@ -1591,7 +1493,8 @@ def getImmobilierWithNotActivationOfAdmin(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfImmobilier(request):
-    im = Immobilier.objects.all().count()
+    if request.user.is_staff is True:
+        im = Immobilier.objects.all().count()
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Tous les annonces de Immobilier dans notre base de données !!",
@@ -1601,7 +1504,6 @@ def getCountOfAnnonceOfImmobilier(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getImmobilierWithoutScrappingMethod(request):
     im = Immobilier.objects.filter(annoceWNScrappOfAdmin=True)
     serializer = ImmobilierSerializer(im, many=True)
@@ -1613,7 +1515,6 @@ def getImmobilierWithoutScrappingMethod(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getImmobilierWithScrappingMethod(request):
     im = Immobilier.objects.filter(annoceWNScrappOfAdmin=False)
     serializer = ImmobilierSerializer(im, many=True)
@@ -1639,10 +1540,7 @@ def addNewEmploi(request):
     villeEmploi = req['villeEmploi']
     
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie)
             except:
@@ -1708,9 +1606,7 @@ def addNewEmploi(request):
 def getEmploi(request):
     try:
         adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             e = Emploi.objects.all()
             serializer = EmploiSerializer(e, many=True)
             return Response({
@@ -1730,61 +1626,30 @@ def getEmploi(request):
         })
 
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def searchEmploiByName(request):
     req = request.data
     nameEmploi = req['nameEmploi']
 
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            emp = Emploi.objects.filter(nameEmploi=nameEmploi)
-            serializer = EmploiSerializer(emp, many=True)
-            return Response({
-                    "status" : status.HTTP_200_OK,
-                    "message": "Les information de l'emploi "+nameEmploi+" !!!",
-                    "data" :  serializer.data
+    emp = Emploi.objects.filter(nameEmploi=nameEmploi,activationAnnonce=True)
+    serializer = EmploiSerializer(emp, many=True)
+    return Response({
+            "status" : status.HTTP_200_OK,
+            "message": "Les information de l'emploi "+nameEmploi+" !!!",
+            "data" :  serializer.data
             })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
-        })
+
 
 
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getEmploiWithActivationOfAdmin(request):
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            emp = Emploi.objects.filter(activationAnnonce=True)
-            serializer = EmploiSerializer(emp, many=True)
-            return Response({
-                    "status" : status.HTTP_200_OK,
-                    "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
-                    "data" :  serializer.data
-            })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
-        })
+    emp = Emploi.objects.filter(activationAnnonce=True)
+    serializer = EmploiSerializer(emp, many=True)
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
+        "data" :  serializer.data
+    })
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated,))
@@ -1793,10 +1658,7 @@ def activationEmploiByAdmin(request):
     nameEmploi = req['nameEmploi']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 Emploi.objects.get(nameEmploi=str(nameEmploi))
                 Emploi.objects.filter(nameEmploi=nameEmploi).update(activationAnnonce=True)
@@ -1865,10 +1727,7 @@ def deleteEmploi(request):
     nameEmploi = req['nameEmploi']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 em = Emploi.objects.get(nameEmploi=nameEmploi)
                 Emploi.objects.filter(nameEmploi=nameEmploi).delete()
@@ -1910,10 +1769,7 @@ def getEmploieInsertWithMembre(request):
 @permission_classes((IsAuthenticated,))
 def getEmploiWithNotActivationOfAdmin(request):
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             emp = Emploi.objects.filter(activationAnnonce=False)
             serializer = EmploiSerializer(emp, many=True)
             return Response({
@@ -1935,17 +1791,17 @@ def getEmploiWithNotActivationOfAdmin(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfEmploi(request):
-    em = Emploi.objects.all().count()
-    return Response({
-        "status" : status.HTTP_200_OK,
-        "message": "Tous les annonces de emploie dans notre base de données !!",
-        "data" : {
+    if request.user.is_staff is True:
+        em = Emploi.objects.all().count()
+        return Response({
+            "status" : status.HTTP_200_OK,
+            "message": "Tous les annonces de emploie dans notre base de données !!",
+            "data" : {
             "nb_Emploi": em
         } 
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getEmploiWithoutScrappingMethod(request):
     em = Emploi.objects.filter(annoceWNScrappOfAdmin=True)
     serializer = EmploiSerializer(em, many=True)
@@ -1957,7 +1813,6 @@ def getEmploiWithoutScrappingMethod(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getEmploiWithScrappingMethod(request):
     em = Emploi.objects.filter(annoceWNScrappOfAdmin=False)
     serializer = EmploiSerializer(em, many=True)
@@ -1981,10 +1836,7 @@ def addNewMaterielleInformatique(request):
     annoceMatrInformatique = req['annoceMatrInformatique']
     villeMatrInformatique = req['villeMatrInformatique']
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie)
             except:
@@ -2049,87 +1901,36 @@ def addNewMaterielleInformatique(request):
         })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getMaterielleInformatique(request):
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            mI = MaterielleInformatique.objects.all()
-            serializer = MaterielleInformatiqueSerializer(mI, many=True)
-            return Response({
-                "status" : status.HTTP_200_OK,
-                "message": "Les information de tous les materielles informatiques",
-                "data" :  serializer.data
-            })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
+    mI = MaterielleInformatique.objects.all()
+    serializer = MaterielleInformatiqueSerializer(mI, many=True)
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Les information de tous les materielles informatiques",
+        "data" :  serializer.data
         })
-
 @api_view(['POST'])
-@permission_classes((IsAuthenticated,))
 def searchMaterielleInformatiqueByName(request):
     req = request.data
-
     nameMatrInformatique = req['nameMatrInformatique']
-
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            mI = MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique)
-            serializer = MaterielleInformatiqueSerializer(mI, many=True)
-            return Response({
-                    "status" : status.HTTP_200_OK,
-                    "message": "Les information de materielle informatique "+nameMatrInformatique+" !!!",
-                    "data" :  serializer.data
-            })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
-        })
+    mI = MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique)
+    serializer = MaterielleInformatiqueSerializer(mI, many=True)
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Les information de materielle informatique "+nameMatrInformatique+" !!!",
+        "data" :  serializer.data
+         })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
+
 def getMaterielleInformatiqueWithActivationOfAdmin(request):
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
-            matInfo = MaterielleInformatique.objects.filter(activationAnnonce=True)
-            serializer = MaterielleInformatiqueSerializer(matInfo, many=True)
-            return Response({
-                    "status" : status.HTTP_200_OK,
-                    "message": "Les information de materielle informatique with activation of "+request.user.email+" !!!",
-                    "data" :  serializer.data
-            })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte"
+    matInfo = MaterielleInformatique.objects.filter(activationAnnonce=True)
+    serializer = MaterielleInformatiqueSerializer(matInfo, many=True)
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Les information de materielle informatique with activation of "+request.user.email+" !!!",
+        "data" :  serializer.data
         })
-    return Response(serializer.data)
 
 @api_view(['POST'])
 @permission_classes((IsAuthenticated,))
@@ -2138,10 +1939,7 @@ def activationMaterielleInformatiqueByAdmin(request):
     nameMatrInformatique = req['nameMatrInformatique']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 MaterielleInformatique.objects.get(nameMatrInformatique=str(nameMatrInformatique))
                 MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).update(activationAnnonce=True)
@@ -2167,13 +1965,10 @@ def activationMaterielleInformatiqueByAdmin(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
-
-
-    if(emailUser=="admin2@gmail.com"):
-        MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).update(activationAnnonce=True)
-    else:
-        return Response("This activation cannot be only with admin account")
+        #if(emailUser=="admin2@gmail.com"):
+         #   MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).update(activationAnnonce=True)
+        #else:
+        #    return Response("This activation cannot be only with admin account")
 
     return Response("Your Voiture Occasion is activate")
 
@@ -2222,10 +2017,7 @@ def deleteMatrInformatique(request):
     nameMatrInformatique = req['nameMatrInformatique']
 
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             try:
                 mI = MaterielleInformatique.objects.get(nameMatrInformatique=nameMatrInformatique)
                 MaterielleInformatique.objects.filter(nameMatrInformatique=nameMatrInformatique).delete()
@@ -2257,10 +2049,7 @@ def deleteMatrInformatique(request):
 def getMaterielleInformatiqueWithNOTActivationOfAdmin(request):
     
     try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        print(adminAccount)
-        print(request.user)
-        if(str(adminAccount) == str(request.user)):
+        if request.user.is_staff is True:
             matInfo = MaterielleInformatique.objects.filter(activationAnnonce=False)
             serializer = MaterielleInformatiqueSerializer(matInfo, many=True)
             return Response({
@@ -2293,17 +2082,18 @@ def getMaterielleInformatiqueInsertWithMembre(request):
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfMaterielleInformatique(request):
-    mI = MaterielleInformatique.objects.all().count()
-    return Response({
-        "status" : status.HTTP_200_OK,
-        "message": "Tous les annonces de materielle informatique dans notre base de données !!",
-        "data" : {
-            "nb_MaterielleInformatique": mI
-        } 
-    })
+    if request.user.is_staff is True:
+        mI = MaterielleInformatique.objects.all().count()
+        return Response({
+            "status" : status.HTTP_200_OK,
+            "message": "Tous les annonces de materielle informatique dans notre base de données !!",
+            "data" : {
+                "nb_MaterielleInformatique": mI
+            } 
+        })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
+
 def getMaterielleInformatiqueWithoutScrappingMethod(request):
     mi = MaterielleInformatique.objects.filter(annoceWNScrappOfAdmin=True)
     serializer = MaterielleInformatiqueSerializer(mi, many=True)
@@ -2315,7 +2105,6 @@ def getMaterielleInformatiqueWithoutScrappingMethod(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getMaterielleInformatiqueWithScrappingMethod(request):
     mi = MaterielleInformatique.objects.filter(annoceWNScrappOfAdmin=False)
     serializer = MaterielleInformatiqueSerializer(mi, many=True)
@@ -2328,6 +2117,7 @@ def getMaterielleInformatiqueWithScrappingMethod(request):
 
 ############################################# Notifications #############################################
 @api_view(['GET'])
+@permission_classes((IsAuthenticated,))
 def getNotifications(request):
     notification = Notification.objects.filter()
     serializer = NotificationSerializer(notification, many=True)
@@ -2338,20 +2128,22 @@ def getNotifications(request):
     })
 
 @api_view(['GET'])
+@permission_classes((IsAuthenticated,))
 def getCountOfAnnonceOfDB(request):
-    vn = VoitureNeuf.objects.all().count()
-    vo = VoitureOccasion.objects.all().count()
-    im = Immobilier.objects.all().count()
-    em = Emploi.objects.all().count()
-    mI = MaterielleInformatique.objects.all().count()
-    return Response({
-        "status" : status.HTTP_200_OK,
-        "message": "Le nombre totale d'annonce de different catégories!!!",
-        "data": {
-            "nb_NewCar": vn,
-            "nb_VoitureOccasion":vo,
-            "nb_Immobilier": im,
-            "nb_Emploi": em,
-            "nb_MaterielleInformatique": mI
+    if request.user.is_staff is True:
+        vn = VoitureNeuf.objects.all().count()
+        vo = VoitureOccasion.objects.all().count()
+        im = Immobilier.objects.all().count()
+        em = Emploi.objects.all().count()
+        mI = MaterielleInformatique.objects.all().count()
+        return Response({
+            "status" : status.HTTP_200_OK,
+            "message": "Le nombre totale d'annonce de different catégories!!!",
+            "data": {
+                "nb_NewCar": vn,
+                "nb_VoitureOccasion":vo,
+                "nb_Immobilier": im,
+                "nb_Emploi": em,
+                "nb_MaterielleInformatique": mI
         }
     })

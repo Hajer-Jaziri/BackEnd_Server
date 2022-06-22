@@ -266,7 +266,7 @@ def updateUser(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Il y a une probleme faire attention !!!!"
         })
-
+        
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def getListOfUser(request):
@@ -558,7 +558,6 @@ def addNewMarque(request):
     })
 
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getMarque(request):
     mq = Marque.objects.all()
     serializer = MarqueSerializer(mq, many=True)
@@ -626,7 +625,14 @@ def deleteMarque(request):
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
         
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =AnnonceVoiture.objet.all() 
+            serializer_class = AnnonceVoitureSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getAnnonceVoiture(request):
     av = AnnonceVoiture.objects.all()
@@ -709,7 +715,14 @@ def addNewCar(request):
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
         
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =VoitureNeuf.objet.all() 
+            serializer_class = VoitureNeufSerializer
+            pagination_class = largeResultsSetPagination
 #Cette méthode doit trvailler seulement pour l'administrateur
 @api_view(['GET'])
 def getVoitureNeuf(request):
@@ -727,7 +740,6 @@ def getVoitureNeuf(request):
             "image": annonceVoit.image,
             "Activation_Annonce": annonceVoit.activationAnnonce,
             "Annoce_Without_Scrapping_Of_Admin": annonceVoit.annoceWNScrappOfAdmin,
-            "Email_User": request.user.email,
             "Type_Car": annonceVoit.typeCar
         })
     
@@ -749,6 +761,14 @@ def searchCarsNewByName(request):
         "message": "Les information du voiture: "+nomVoiture,
         "data" :  serializer.data
     })
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureNeuf.objet.all() 
+        serializer_class = VoitureNeufSerializer
+        pagination_class = largeResultsSetPagination
 
 @api_view(['GET'])
 def getVoitureNeufWithActivationOfAdmin(request):
@@ -759,6 +779,14 @@ def getVoitureNeufWithActivationOfAdmin(request):
         "message": "Les information du voiture neuf qui sont activée par admin ",
         "data" :  serializer.data
     })
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureNeuf.objet.all() 
+        serializer_class = VoitureNeufSerializer
+        pagination_class = largeResultsSetPagination
 
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
@@ -850,7 +878,14 @@ def deleteNewCar(request):
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
 
-
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureNeuf.objet.all() 
+        serializer_class = VoitureNeufSerializer
+        pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getVoitureNeufInsertWithMembre(request):
@@ -880,7 +915,14 @@ def getCountOfAnnonceOfNewCar(request):
         "message": "Les nombres d'annonces du voiture neuf qui sont inclue dans la base !!",
         "data" :  {"nb_NewCar": vn}
     })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureNeuf.objet.all() 
+        serializer_class = VoitureNeufSerializer
+        pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getVoitureNeufWithoutScrappingMethod(request):
     vn = AnnonceVoiture.objects.filter(annoceWNScrappOfAdmin=True,typeCar="New_Car")
@@ -986,7 +1028,14 @@ def addOccasionCar(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =VoitureOccasion.objet.all() 
+            serializer_class = VoitureOccasionSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getVoitureOccasion(request):
     listFinal=[]
@@ -1003,7 +1052,7 @@ def getVoitureOccasion(request):
             "image": annonceVoit.image,
             "Activation_Annonce": annonceVoit.activationAnnonce,
             "Annoce_Without_Scrapping_Of_Admin": annonceVoit.annoceWNScrappOfAdmin,
-            "Email_User": request.user.email,
+            #"Email_User": request.user.email,
             "Type_Car": annonceVoit.typeCar,
             "Description":voitOcc.description,
             "Annee_Pub":voitOcc.annee,
@@ -1017,7 +1066,14 @@ def getVoitureOccasion(request):
             "message": "Les information de tous les voitures occasions",
             "data" :  listFinal
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureOccasion.objet.all() 
+        serializer_class = VoitureOccasionSerializer
+        pagination_class = largeResultsSetPagination
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
 def getVoitureOccasionWithActivationOfAdmin(request):
@@ -1132,7 +1188,14 @@ def deleteOccasionCar(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =VoitureOccasion.objet.all() 
+            serializer_class = VoitureOccasionSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getVoitureOccasionInsertWithMembre(request):
@@ -1151,19 +1214,31 @@ def getVoitureOccasionInsertWithMembre(request):
             "message": "Attention vous avez s'authentifier comme étant un admin"
         })
 
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =VoitureOccasion.objet.all() 
+            serializer_class = VoitureOccasionSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
-@permission_classes((IsAuthenticated,))
 def getVoitureoccasionNotactivationOfAdmin(request):
-    if request.user.is_staff is True:
-        vn = AnnonceVoiture.objects.filter(activationAnnonce=False,typeCar="Occasion_Car")
-        serializer = AnnonceVoitureSerializer(vn, many=True)
+    vn = AnnonceVoiture.objects.filter(activationAnnonce=False,typeCar="Occasion_Car")
+    serializer = AnnonceVoitureSerializer(vn, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
         "message": "Les information du voiture neuf qui ne sont pas activée par admin ",
         "data" :  serializer.data
     })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+        page=10
+        page_size_query_paramn ='page_size'
+        max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+        queryset =VoitureOccasion.objet.all() 
+        serializer_class = VoitureOccasionSerializer
+        pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getVoitureOccasionWithoutScrappingMethod(request):
     vn = AnnonceVoiture.objects.filter(annoceWNScrappOfAdmin=True,typeCar="Occasion_Car")
@@ -1282,7 +1357,14 @@ def addNewImmobilier(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getImmobilier(request):
     try:
@@ -1328,12 +1410,18 @@ def searchImmobilierByName(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
 def getImmobilierWithActivationOfAdmin(request):
     try:
-        if request.user.is_staff is True:
             imo = Immobilier.objects.filter(activationAnnonce=True)
             serializer = ImmobilierSerializer(imo, many=True)
             return Response({
@@ -1341,11 +1429,7 @@ def getImmobilierWithActivationOfAdmin(request):
                     "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
                     "data" :  serializer.data
             })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
-            })
+
     except:
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
@@ -1454,7 +1538,14 @@ def deleteImmobilier(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getImmobilierInsertWithMembre(request):
@@ -1466,7 +1557,14 @@ def getImmobilierInsertWithMembre(request):
         "message": "Tous les annonces de Immobilier inséerer par membre !!",
         "data" :  serializer.data
     })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET']) 
 @permission_classes((IsAuthenticated,))
 def getImmobilierWithNotActivationOfAdmin(request):
@@ -1502,7 +1600,14 @@ def getCountOfAnnonceOfImmobilier(request):
             "nb_Immobilier": im
         } 
     })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getImmobilierWithoutScrappingMethod(request):
     im = Immobilier.objects.filter(annoceWNScrappOfAdmin=True)
@@ -1513,7 +1618,14 @@ def getImmobilierWithoutScrappingMethod(request):
         "data" : serializer.data
     })
     return Response(serializer.data)
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Immobilier.objet.all() 
+            serializer_class = ImmobilierSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getImmobilierWithScrappingMethod(request):
     im = Immobilier.objects.filter(annoceWNScrappOfAdmin=False)
@@ -1536,9 +1648,10 @@ def addNewEmploi(request):
     imageEmploi = req['imageEmploi'] # You should send it in base64 format    
     priceEmploi = req['priceEmploi']
     dateEmploi = req['dateEmploi']
-    annonceEmploi = req['annonceEmploi']
+    annoceEmploi = req['annoceEmploi']
     villeEmploi = req['villeEmploi']
-    
+
+
     try:
         if request.user.is_staff is True:
             try:
@@ -1547,20 +1660,22 @@ def addNewEmploi(request):
                 categorie = Categorie(nomCategorie=nomCategorie,activationCategorie=True)
                 categorie.save()
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie)
-            em = Emploi(nameEmploi=nameEmploi, imageEmploi=imageEmploi,priceEmploi=priceEmploi,dateEmploi=dateEmploi,
-            annoceEmploi=annonceEmploi,villeEmploi=villeEmploi,activationAnnonce=True,annoceWNScrappOfAdmin=True,
-            idEmploi=categorieInformation,emailUser=request.user)
-            em.save()
+
+            e = Emploi(nameEmploi=nameEmploi, imageEmploi=imageEmploi,priceEmploi=priceEmploi,
+            dateEmploi=dateEmploi,annoceEmploi=annoceEmploi,villeEmploi=villeEmploi,
+            annoceWNScrappOfAdmin=True,activationAnnonce=True,idEmploi=categorieInformation,emailUser=request.user)
+            e.save()
+
             return Response({
                 "status" : status.HTTP_200_OK,
-                "message": "La annonce du Immobilier "+nameEmploi+" a été ajoutée avec succées par "+request.user.email+"!!",
+                "message": "La annonce du Emploi "+nameEmploi+" a été ajoutée avec succées par "+request.user.email+"!!",
                 "data": {
                     "nomCategorie":nomCategorie,
                     "nameEmploi":nameEmploi,
                     "imageEmploi":imageEmploi,
                     "priceEmploi":priceEmploi,
                     "dateEmploi":dateEmploi,
-                    "annonceEmploi":annonceEmploi,
+                    "annoceEmploi":annoceEmploi,
                     "villeEmploi":villeEmploi
                 }
             })
@@ -1571,59 +1686,52 @@ def addNewEmploi(request):
                 categorie = Categorie(nomCategorie=nomCategorie,activationCategorie=True)
                 categorie.save()
                 categorieInformation = Categorie.objects.get(nomCategorie=nomCategorie)
-            
-            em = Emploi(nameEmploi=nameEmploi, imageEmploi=imageEmploi,priceEmploi=priceEmploi,dateEmploi=dateEmploi,
-            annoceEmploi=annonceEmploi,villeEmploi=villeEmploi,activationAnnonce=True,annoceWNScrappOfAdmin=True,
-            idEmploi=categorieInformation,emailUser=request.user)
-            em.save()
+
+            e = Emploi(nameEmploi=nameEmploi, imageEmploi=imageEmploi,priceEmploi=priceEmploi,
+            dateEmploi=dateEmploi,annoceEmploi=annoceEmploi,villeEmploi=villeEmploi,activationAnnonce=False,
+            annoceWNScrappOfAdmin=True,idEmploi=categorieInformation,emailUser=request.user)
+            e.save()
             
             dateToday = datetime.today().strftime('%Y-%m-%d')
-            notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=request.user.email,contenu="We add a new Emploi and we wait the activation of the admin",dateNotification=str(dateToday))
+            notification = Notification(emailAdmin="admin2@gmail.com",emailMembre=request.user,contenu="We add a new Immobilier and we wait the activation of the admin",dateNotification=str(dateToday))
             notification.save()
+
             return Response({
                 "status" : status.HTTP_200_OK,
-                "message": "La annonce du emploie "+nameEmploi+" a été ajoutée avec succées par "+request.user.email+"!!",
+                "message": "La annonce du Emploi "+nameEmploi+" a été ajoutée avec succées par "+request.user.email+"!!",
                 "data": {
                     "nomCategorie":nomCategorie,
                     "nameEmploi":nameEmploi,
                     "imageEmploi":imageEmploi,
                     "priceEmploi":priceEmploi,
                     "dateEmploi":dateEmploi,
-                    "annonceEmploi":annonceEmploi,
+                    "annoceEmploi":annoceEmploi,
                     "villeEmploi":villeEmploi
                 }
-            })
-
-    except:
-        return Response({
-            "status" : status.HTTP_404_NOT_FOUND,
-            "message": "Vous n'avez pas le droit d'activer se compte",
-        })
-
-#Cette méthode doit trvailler seulement pour l'administrateur
-@api_view(['GET'])
-@permission_classes((IsAuthenticated,))
-def getEmploi(request):
-    try:
-        adminAccount = User.objects.get(username="admin2-admin2")
-        if request.user.is_staff is True:
-            e = Emploi.objects.all()
-            serializer = EmploiSerializer(e, many=True)
-            return Response({
-                "status" : status.HTTP_200_OK,
-                "message": "Les information de tous les Immobilier",
-                "data" :  serializer.data
-            })
-        else:
-            return Response({
-                "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Vous n'avez pas le droit d'activer se compte",
             })
     except:
         return Response({
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte"
         })
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
+#Cette méthode doit trvailler seulement pour l'administrateur
+@api_view(['GET'])
+def getEmploi(request):
+    e = Emploi.objects.all()
+    serializer = EmploiSerializer(e, many=True)
+    return Response({
+        "status" : status.HTTP_200_OK,
+        "message": "Les information de tous les empoils",
+        "data" :  serializer.data
+    })
 
 @api_view(['POST'])
 def searchEmploiByName(request):
@@ -1639,7 +1747,14 @@ def searchEmploiByName(request):
             })
 
 
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
 #Cette méthode doit trvailler seulement pour le membre
 @api_view(['GET'])
 def getEmploiWithActivationOfAdmin(request):
@@ -1647,7 +1762,7 @@ def getEmploiWithActivationOfAdmin(request):
     serializer = EmploiSerializer(emp, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
-        "message": "Les information de l'immobilier with activation of "+request.user.email+" !!!",
+        "message": "Les information de l'immobilier with activation of ",
         "data" :  serializer.data
     })
 
@@ -1694,13 +1809,13 @@ def updateEmploi(request):
     imageEmploi = req['imageEmploi'] # You should send it in base64 format    
     priceEmploi = req['priceEmploi']
     dateEmploi = req['dateEmploi']
-    annonceEmploi = req['annonceEmploi']
+    annoceEmploi = req['annoceEmploi']
     villeEmploi = req['villeEmploi']
 
     try:
         em = Emploi.objects.get(nameEmploi=nameEmploi)
         Emploi.objects.filter(nameEmploi=newnameEmploi).update(nameEmploi=nameEmploi,imageEmploi=imageEmploi,
-        priceEmploi=priceEmploi,dateEmploi=dateEmploi,annoceEmploi=annonceEmploi,villeEmploi=villeEmploi)
+        priceEmploi=priceEmploi,dateEmploi=dateEmploi,annoceEmploi=annoceEmploi,villeEmploi=villeEmploi)
 
         return Response({
             "status" : status.HTTP_200_OK,
@@ -1710,7 +1825,7 @@ def updateEmploi(request):
                 "imageEmploi" : imageEmploi,
                 "priceEmploi" : priceEmploi,
                 "dateEmploi" : dateEmploi,
-                "annonceEmploi" : annonceEmploi,
+                "annoceEmploi" : annoceEmploi,
                 "villeEmploi" : villeEmploi
                 }
             })
@@ -1753,7 +1868,14 @@ def deleteEmploi(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getEmploieInsertWithMembre(request):
@@ -1764,7 +1886,14 @@ def getEmploieInsertWithMembre(request):
         "message": "Tous les annonces de emploie inséerer par membre !!",
         "data" :  serializer.data
     })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getEmploiWithNotActivationOfAdmin(request):
@@ -1800,7 +1929,14 @@ def getCountOfAnnonceOfEmploi(request):
             "nb_Emploi": em
         } 
     })
-
+        class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+        class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getEmploiWithoutScrappingMethod(request):
     em = Emploi.objects.filter(annoceWNScrappOfAdmin=True)
@@ -1811,7 +1947,14 @@ def getEmploiWithoutScrappingMethod(request):
         "data" : serializer.data
     })
     return Response(serializer.data)
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =Emploi.objet.all() 
+            serializer_class = EmploiSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getEmploiWithScrappingMethod(request):
     em = Emploi.objects.filter(annoceWNScrappOfAdmin=False)
@@ -1899,7 +2042,14 @@ def addNewMaterielleInformatique(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getMaterielleInformatique(request):
     mI = MaterielleInformatique.objects.all()
@@ -1920,15 +2070,22 @@ def searchMaterielleInformatiqueByName(request):
         "message": "Les information de materielle informatique "+nameMatrInformatique+" !!!",
         "data" :  serializer.data
          })
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 
 @api_view(['GET'])
-
 def getMaterielleInformatiqueWithActivationOfAdmin(request):
     matInfo = MaterielleInformatique.objects.filter(activationAnnonce=True)
     serializer = MaterielleInformatiqueSerializer(matInfo, many=True)
     return Response({
         "status" : status.HTTP_200_OK,
-        "message": "Les information de materielle informatique with activation of "+request.user.email+" !!!",
+        "message": "Les information de materielle informatique with activation of !!!",
         "data" :  serializer.data
         })
 
@@ -1953,7 +2110,7 @@ def activationMaterielleInformatiqueByAdmin(request):
             except:
                 return Response({
                 "status" : status.HTTP_404_NOT_FOUND,
-                "message": "Ce nom immibilier n'existe pas",
+                "message": "Ce MatrInformatique n'existe pas",
             })
         else:
             return Response({
@@ -2043,7 +2200,14 @@ def deleteMatrInformatique(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getMaterielleInformatiqueWithNOTActivationOfAdmin(request):
@@ -2067,7 +2231,14 @@ def getMaterielleInformatiqueWithNOTActivationOfAdmin(request):
             "status" : status.HTTP_404_NOT_FOUND,
             "message": "Vous n'avez pas le droit d'activer se compte",
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listAPIview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 @permission_classes((IsAuthenticated,))
 def getMaterielleInformatiqueInsertWithMembre(request):
@@ -2091,9 +2262,15 @@ def getCountOfAnnonceOfMaterielleInformatique(request):
                 "nb_MaterielleInformatique": mI
             } 
         })
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listAPIview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
-
 def getMaterielleInformatiqueWithoutScrappingMethod(request):
     mi = MaterielleInformatique.objects.filter(annoceWNScrappOfAdmin=True)
     serializer = MaterielleInformatiqueSerializer(mi, many=True)
@@ -2103,7 +2280,14 @@ def getMaterielleInformatiqueWithoutScrappingMethod(request):
         "data" : serializer.data
     })
     return Response(serializer.data)
-
+    class largeResultsSetPagination(PageNumberPagination): 
+            page=10
+            page_size_query_paramn ='page_size'
+            max_page_size =500
+    class VoitureALLtest(generics.listApiview):
+            queryset =MaterielleInformatique.objet.all() 
+            serializer_class = MaterielleInformatiqueSerializer
+            pagination_class = largeResultsSetPagination
 @api_view(['GET'])
 def getMaterielleInformatiqueWithScrappingMethod(request):
     mi = MaterielleInformatique.objects.filter(annoceWNScrappOfAdmin=False)

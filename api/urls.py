@@ -1,8 +1,7 @@
 from django.urls import path
 from . import views
 from rest_framework.authtoken.views import obtain_auth_token
-
-
+from .views import VoitureALLtest, VoitureNeufALLtest, VoitureOccasionALLtest, ImmobilierALLtest, EmploiALLtest,MaterielleInformatiqueALLtest
 urlpatterns = [
     
     ####################### Methods when we use the scraping algorithms ########################
@@ -43,79 +42,83 @@ urlpatterns = [
     path('searchMarqueByName/',views.searchMarqueByName),#C'est une fonction seulement l'admin peut l'acceder
     path('updateMarque/',views.updateMarque),#C'est une fonction seulement l'admin peut l'acceder
     path('deleteMarque/',views.deleteMarque),#C'est une fonction seulement l'admin peut l'acceder
+    path('getCountOfMarque/',views.getCountOfMarque),#C'est une fonction seulement l'admin peut l'acceder
 
-    path('getAnnonceVoiture/', views.getAnnonceVoiture),
-    
+
+    path('getAnnonceVoiture/', VoitureALLtest.as_view()),
     path('addNewCar/',views.addNewCar),
-    path('getVoitureNeuf/', views.getVoitureNeuf),
+    path('getVoitureNeuf/', VoitureNeufALLtest.as_view()),
     path('searchCarsNewByName/', views.searchCarsNewByName),
-    path('getVoitureNeufWithActivationOfAdmin/',views.getVoitureNeufWithActivationOfAdmin),
-    path('getVoitureNeufNotactivationOfAdmin/',views.getVoitureNeufNotactivationOfAdmin),
+    path('getVoitureNeufWithActivationOfAdmin/',VoitureNeufALLtest.as_view()),
+    path('getVoitureNeufNotactivationOfAdmin/',VoitureNeufALLtest.as_view()),
     path('activationVoitureNeufByAdmin/',views.activationVoitureNeufByAdmin),
     path('updateNewCar/', views.updateNewCar),
     path('deleteNewCar/', views.deleteNewCar),
-    path('getVoitureNeufInsertWithMembre/',views.getVoitureNeufInsertWithMembre),
+    path('getVoitureNeufInsertWithMembre/',VoitureNeufALLtest.as_view()),
     path('getCountOfAnnonceOfNewCar/',views.getCountOfAnnonceOfNewCar),
-    path('getVoitureNeufWithoutScrappingMethod/',views.getVoitureNeufWithoutScrappingMethod),
+    path('getVoitureNeufWithoutScrappingMethod/',VoitureNeufALLtest.as_view()),
     path('getAllVoitureNeufByMarque/',views.getAllVoitureNeufByMarque),
-
+    
     path('addOccasionCar/',views.addOccasionCar),
-    path('getVoitureOccasion/', views.getVoitureOccasion),
-    path('getVoitureOccasionWithActivationOfAdmin/',views.getVoitureOccasionWithActivationOfAdmin),
+    path('getVoitureOccasion/', VoitureOccasionALLtest.as_view()),
+    path('getVoitureOccasionWithActivationOfAdmin/',VoitureOccasionALLtest.as_view()),
     path('searchCarsOccasionByName/', views.searchCarsOccasionByName),
-    path('activationVoitureOccasionByAdmin/',views.activationVoitureOccasionByAdmin),
+    path('activationVoitureOccasionByAdmin/',VoitureOccasionALLtest.as_view()),
     path('updateOccasionCar/',views.updateOccasionCar),
     path('deleteOccasionCar/', views.deleteOccasionCar),
-    path('getVoitureOccasionInsertWithMembre/',views.getVoitureOccasionInsertWithMembre),
-    path('getVoitureoccasionNotactivationOfAdmin/',views.getVoitureoccasionNotactivationOfAdmin),
-    path('getVoitureOccasionWithoutScrappingMethod/',views.getVoitureOccasionWithoutScrappingMethod),
+    path('getVoitureOccasionInsertWithMembre/',views.VoitureOccasionALLtest.as_view()),
+    path('getVoitureoccasionNotactivationOfAdmin/',views.VoitureOccasionALLtest.as_view()),
+    path('getVoitureOccasionWithoutScrappingMethod/',views.VoitureOccasionALLtest.as_view()),
     path('getCountOfAnnonceOfOccasionCar/',views.getCountOfAnnonceOfOccasionCar),
     path('getAllVoitureOccasionByMarque/',views.getAllVoitureOccasionByMarque),
 
     ######################## Methods when we make some action for annonce Immobilier ########################
     path('addNewImmobilier/',views.addNewImmobilier),
-    path('getImmobilier/', views.getImmobilier), #Cette méthode doit trvailler seulement pour l'administrateur
+    path('getImmobilier/', ImmobilierALLtest.as_view()), #Cette méthode doit trvailler seulement pour l'administrateur
     path('searchImmobilierByName/',views.searchImmobilierByName), #Cette méthode doit trvailler seulement pour l'administrateur
-    path('getImmobilierWithActivationOfAdmin/',views.getImmobilierWithActivationOfAdmin),#Cette méthode doit trvailler seulement pour l'administrateur
+    path('getImmobilierWithActivationOfAdmin/',ImmobilierALLtest.as_view()),#Cette méthode doit trvailler seulement pour l'administrateur
     path('activationImmobilierByAdmin/',views.activationImmobilierByAdmin),#Cette méthode doit trvailler seulement pour l'administrateur
     path('updateImmobilier/',views.updateImmobilier),
     path('deleteImmobilier/',views.deleteImmobilier),
-    path('getImmobilierInsertWithMembre/',views.getImmobilierInsertWithMembre),
-    path('getImmobilierWithNotActivationOfAdmin/',views.getImmobilierWithNotActivationOfAdmin),
+    path('getImmobilierInsertWithMembre/',ImmobilierALLtest.as_view()),
+    path('getImmobilierWithNotActivationOfAdmin/',ImmobilierALLtest.as_view()),
     path('getCountOfAnnonceOfImmobilier/',views.getCountOfAnnonceOfImmobilier),
-    path('getImmobilierWithoutScrappingMethod/',views.getImmobilierWithoutScrappingMethod),
-    path('getImmobilierWithScrappingMethod/',views.getImmobilierWithScrappingMethod),
+    path('getImmobilierWithoutScrappingMethod/',ImmobilierALLtest.as_view()),
+    path('getImmobilierWithScrappingMethod/',views.ImmobilierALLtest.as_view()),
 
     ######################## Methods when we make some action for annonce Emploi ########################
     path('addNewEmploi/', views.addNewEmploi),
-    path('getEmploi/', views.getEmploi),
+    path('getEmploi/', EmploiALLtest.as_view()),
     path('searchEmploiByName/',views.searchEmploiByName),
-    path('getEmploiWithActivationOfAdmin/',views.getEmploiWithActivationOfAdmin),
+    path('getEmploiWithActivationOfAdmin/',EmploiALLtest.as_view()),
     path('activationEmploiByAdmin/',views.activationEmploiByAdmin),
     path('updateEmploi/',views.updateEmploi),
     path('deleteEmploi/',views.deleteEmploi),
-    path('getEmploieInsertWithMembre/',views.getEmploieInsertWithMembre),
-    path('getEmploiWithNotActivationOfAdmin/',views.getEmploiWithNotActivationOfAdmin),
+    path('getEmploieInsertWithMembre/',views.EmploiALLtest.as_view()),
+    path('getEmploiWithNotActivationOfAdmin/',views.EmploiALLtest.as_view()),
     path('getCountOfAnnonceOfEmploi/',views.getCountOfAnnonceOfEmploi),
-    path('getEmploiWithoutScrappingMethod/',views.getEmploiWithoutScrappingMethod),
-    path('getEmploiWithScrappingMethod/', views.getEmploiWithScrappingMethod),
+    path('getEmploiWithoutScrappingMethod/',EmploiALLtest.as_view()),
+    path('getEmploiWithScrappingMethod/',EmploiALLtest.as_view()),
 
     ######################## Methods when we make some action for annonce Materielle Informatique ########################
     path('addNewMaterielleInformatique/',views.addNewMaterielleInformatique),
-    path('getMaterielleInformatique/',views.getMaterielleInformatique),
+    path('getMaterielleInformatique/',MaterielleInformatiqueALLtest.as_view()),
     path('searchMaterielleInformatiqueByName/',views.searchMaterielleInformatiqueByName),
-    path('getMaterielleInformatiqueWithActivationOfAdmin/',views.getMaterielleInformatiqueWithActivationOfAdmin),
+    path('getMaterielleInformatiqueWithActivationOfAdmin/',MaterielleInformatiqueALLtest.as_view()),
     path('activationMaterielleInformatiqueByAdmin/', views.activationMaterielleInformatiqueByAdmin),
     path('updateMatrInformatique/',views.updateMatrInformatique),
     path('deleteMatrInformatique/',views.deleteMatrInformatique),
-    path('getMaterielleInformatiqueInsertWithMembre/',views.getMaterielleInformatiqueInsertWithMembre),
-    path('getMaterielleInformatiqueWithNOTActivationOfAdmin/',views.getMaterielleInformatiqueWithNOTActivationOfAdmin),
+    path('getMaterielleInformatiqueInsertWithMembre/',MaterielleInformatiqueALLtest.as_view()),
+    path('getMaterielleInformatiqueWithNOTActivationOfAdmin/',MaterielleInformatiqueALLtest.as_view()),
     path('getCountOfAnnonceOfMaterielleInformatique/',views.getCountOfAnnonceOfMaterielleInformatique),
-    path('getMaterielleInformatiqueWithoutScrappingMethod/',views.getMaterielleInformatiqueWithoutScrappingMethod),
-    path('getMaterielleInformatiqueWithScrappingMethod/',views.getMaterielleInformatiqueWithScrappingMethod),
+    path('getMaterielleInformatiqueWithoutScrappingMethod/',MaterielleInformatiqueALLtest.as_view()),
+    path('getMaterielleInformatiqueWithScrappingMethod/',MaterielleInformatiqueALLtest.as_view()),
+    
     
     ######################## Methods when we make some action for Notifications and all the annonce ########################
     path('getNotifications/',views.getNotifications),
+    path('getNotificationWithMemebre/',views.getNotificationWithMemebre),
+
     path('getCountOfAnnonceOfDB/',views.getCountOfAnnonceOfDB)
 
 ]
